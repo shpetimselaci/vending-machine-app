@@ -1,25 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+
+import { Container, Grid } from "@mui/material";
+
+import Page from "./components/Page";
+
+import VendingMachine from "./views/VendingMachine";
+import Auth from "./views/Auth";
+import { ICookie } from "./types";
+import { useCookies } from "react-cookie";
+import { getProfile } from "./api/auth";
 
 function App() {
+  const [{ auth }, setCookie] = useCookies<"auth", ICookie>(["auth"]);
+
+  const updateProfile = async (auth: ICookie["auth"]) => {
+    if (auth?.token) {
+      const user = await getProfile();
+
+      setCookie("auth", { ...auth, user: user.data });
+    }
+  };
+
+  useEffect(() => {
+    updateProfile(auth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Page title="Vending Machine">
+      <Container sx={{ height: "100%", paddingBlock: "20px" }}>
+        <Grid display="flex" flexDirection="column" flex="1" height="100%">
+          <Auth />
+          <VendingMachine />
+        </Grid>
+      </Container>
+    </Page>
   );
 }
 
